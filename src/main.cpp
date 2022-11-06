@@ -13,6 +13,7 @@
 #include <ArduinoOTA.h>
 #include <SoftwareSerial.h>
 #include <sml.h>
+#include <WebSerial.h>
 
 #define FORMAT_LITTLEFS_IF_FAILED false
 
@@ -24,6 +25,8 @@ AsyncWebServer server(80);
 
 void printWifiStatus();
 void readByte(unsigned char currentChar);
+void recvMsg(uint8_t *data, size_t len);
+void printMsg(const char *message);
 
 void setup()
 {
@@ -71,6 +74,10 @@ void setup()
 
   AsyncElegantOTA.begin(&server); // Start ElegantOTA
 
+  WebSerial.begin(&server);
+  /* Attach Message Callback */
+  WebSerial.msgCallback(recvMsg);
+
   server.begin();
 }
 
@@ -109,14 +116,32 @@ void readByte(unsigned char currentChar)
   currentState = smlState(currentChar);
   if (currentState == SML_UNEXPECTED)
   {
-    Serial.print(F(">>> Unexpected byte\n"));
+    printMsg(">>> Unexpected byte\n");
   }
   if (currentState == SML_FINAL)
   {
-    Serial.print(F(">>> Successfully received a complete message!\n"));
+    printMsg(">>> Successfully received a complete message!\n");
   }
   if (currentState == SML_CHECKSUM_ERROR)
   {
-    Serial.print(F(">>> Checksum error.\n"));
+    printMsg(">>> Checksum error.\n");
   }
+}
+
+/* Message callback of WebSerial */
+void recvMsg(uint8_t *data, size_t len)
+{
+  WebSerial.println("Received Data...");
+  String d = "";
+  for (int i = 0; i < len; i++)
+  {
+    d += char(data[i]);
+  }
+  WebSerial.println(d);
+}
+
+void printMsg(const char *message)
+{
+  Serial.print(message);
+  WebSerial.print(message);
 }
