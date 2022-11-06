@@ -1,53 +1,58 @@
 #include <Arduino.h>
+#include "FS.h"
+#include <LittleFS.h>
+
+#include <Arduino.h>
 #include <WiFiManager.h>
 #include <SPI.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include "SPIFFS.h"
+#include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
+#include <AsyncElegantOTA.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+#include <SoftwareSerial.h>
+#include <sml.h>
 
-#define WIRE Wire
+#define FORMAT_LITTLEFS_IF_FAILED false
 
-Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64, &WIRE);
+#define MYPORT_TX 12
+#define MYPORT_RX 14
+SoftwareSerial myPort;
 
 AsyncWebServer server(80);
+
+void printWifiStatus();
+void readByte(unsigned char currentChar);
 
 void setup()
 {
 
   Serial.begin(9600);
-  Wire.begin(5, 4);
   Serial.println("Booting...");
 
-  if (!SPIFFS.begin())
+  myPort.begin(9600, SWSERIAL_8N1, MYPORT_RX, MYPORT_TX, false);
+  if (!myPort)
   {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+    Serial.println("Invalid SoftwareSerial pin configuration, check config");
+    while (1)
+    {
+      delay(1000);
+    }
+  }
+
+  if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED))
+  {
+    Serial.println("LittleFS Mount Failed");
     return;
   }
 
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println("... booting!");
-  display.display();
-
   WiFiManager wm;
   bool res;
-  display.clearDisplay();
-  display.println("Connect to AP:\n\n");
-  display.println("LogMe_MeterLogger");
-  display.display();
   res = wm.autoConnect("LogMe_MeterLogger"); // password protected ap
 
   if (!res)
   {
-    display.clearDisplay();
-    display.print("...failed to connect WIFI!");
-    display.display();
-
     Serial.println("Failed to connect");
     // ESP.restart();
   }
@@ -55,25 +60,63 @@ void setup()
   {
     // if you get here you have connected to the WiFi
     Serial.println("...connected to WIFI");
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0, 0);
-    display.println("WiFi Connected!");
-    display.print("IP: ");
-    display.print(WiFi.localIP());
-    display.setCursor(0, 0);
-    display.display(); // actually display all of the above
   }
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(SPIFFS, "/index.html", "text/html"); });
+  printWifiStatus();
 
-  server.serveStatic("/assets", SPIFFS, "/assets/");
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/index.html", "text/html"); });
+
+  server.serveStatic("/assets", LittleFS, "/assets/");
+
+  AsyncElegantOTA.begin(&server); // Start ElegantOTA
 
   server.begin();
 }
 
 void loop()
 {
+  ArduinoOTA.handle();
+
+  while (myPort.available() > 0)
+  {
+    readByte(myPort.read());
+  }
+}
+
+void printWifiStatus()
+{
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+}
+
+sml_states_t currentState;
+
+void readByte(unsigned char currentChar)
+{
+  currentState = smlState(currentChar);
+  if (currentState == SML_UNEXPECTED)
+  {
+    Serial.print(F(">>> Unexpected byte\n"));
+  }
+  if (currentState == SML_FINAL)
+  {
+    Serial.print(F(">>> Successfully received a complete message!\n"));
+  }
+  if (currentState == SML_CHECKSUM_ERROR)
+  {
+    Serial.print(F(">>> Checksum error.\n"));
+  }
 }
