@@ -1,6 +1,6 @@
 <template>
-  <div class="m-3">
-    <h1 class="text-4xl">Home</h1>
+  <div class="m-3 flex justify-center flex-col space-y-2">
+    <h1 class="text-4xl text-center">LogMe - SmartMeterLogger</h1>
 
     <div class="flex justify-center">
       <div>
@@ -23,4 +23,4 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup lang="ts"></script>
