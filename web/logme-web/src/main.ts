@@ -19,7 +19,11 @@ const routes = [
   { path: "/settings", component: SettingsView },
   { path: "/serial", component: SerialView },
   { path: "/update", component: UpdateView },
-  { path: "/sensor/:id", component: SensorView },
+  {
+    path: "/sensor/:id",
+    component: SensorView,
+    props: true,
+  },
 ];
 
 const router = createRouter({
