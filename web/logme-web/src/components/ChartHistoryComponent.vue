@@ -10,12 +10,9 @@ const chartOptions = ref({
     animations: {
       enabled: true,
       easing: "linear",
-      dynamicAnimation: {
-        speed: 1000,
-      },
     },
     toolbar: {
-      show: false,
+      show: true,
     },
     zoom: {
       enabled: false,

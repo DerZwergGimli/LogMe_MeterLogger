@@ -1,7 +1,5 @@
 <template>
-  <div class="m-3 flex justify-center flex-col space-y-2">
-    <h1 class="text-4xl text-center">LogMe - SmartMeterLogger</h1>
-
+  <div class="m-3 mt-10 flex justify-center flex-col space-y-2">
     <div class="flex justify-center">
       <div v-if="sensor_store.sensors">
         <div
@@ -9,7 +7,7 @@
           key="sensor"
           class="box"
         >
-          <router-link :to="'/sensor/' + index">
+          <router-link :to="'sensor/' + index">
             <div>
               <sensor-component
                 :index="index"

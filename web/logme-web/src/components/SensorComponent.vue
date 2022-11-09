@@ -1,7 +1,7 @@
 <template>
   <h5 class="box-header text-center">Interface {{ index }}</h5>
   <div class="box-content space-y-2">
-    <div class="grid grid-cols-2 gap-4 border-2 rounded-md p-2 max-w-md">
+    <div class="grid grid-cols-2 gap-4 rounded-md p-2 max-w-md">
       <div>Index</div>
       <div class="value">
         <div class="basis-3/4 text-right">{{ index }}</div>
