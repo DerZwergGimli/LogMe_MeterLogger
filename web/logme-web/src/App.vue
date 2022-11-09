@@ -7,7 +7,7 @@ sensor_store.init();
 </script>
 
 <template>
-  <div id="app">
+  <div id="app" class="dark:bg-gray-700 h-screen">
     <NavigationView />
     <router-view></router-view>
   </div>

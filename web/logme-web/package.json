@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@iconify-prerendered/vue-carbon": "^0.13.1665986828",
+    "@vueuse/core": "^9.4.0",
     "apexcharts": "^3.36.3",
     "chart.js": "^3.9.1",
     "flowbite": "^1.5.3",
