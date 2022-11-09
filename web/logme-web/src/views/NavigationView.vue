@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import "flowbite";
+import { useDark, useToggle } from "@vueuse/core";
 const baseurl = window.location.origin;
-import { useDark, useToggle, usePreferredDark } from "@vueuse/core";
 
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
